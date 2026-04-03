@@ -53,9 +53,14 @@ public sealed class FunctionGenerator
         if (_config.SkipImStrHelpers && func.IsImstrHelper)
             return false;
 
-        // Skip varargs functions
-        if (_config.SkipVarargsFunctions && func.Arguments.Any(a => a.IsVarargs))
-            return false;
+        // Skip varargs functions (both is_varargs marker and va_list parameter type)
+        if (_config.SkipVarargsFunctions)
+        {
+            if (func.Arguments.Any(a => a.IsVarargs))
+                return false;
+            if (func.Arguments.Any(a => a.Type?.Declaration?.Contains("va_list") == true))
+                return false;
+        }
 
         return true;
     }

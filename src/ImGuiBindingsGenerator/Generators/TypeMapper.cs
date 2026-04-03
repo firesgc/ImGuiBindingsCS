@@ -48,6 +48,7 @@ public static class TypeMapper
         ["ImTextureID"] = "nint",
         ["ImFileHandle"] = "nint",
         ["size_t"] = "nuint",
+        ["va_list"] = "nint", // va_list not directly usable in C#; mapped to IntPtr
         ["ImFontAtlasCustomRect"] = "ImFontAtlasRect", // typedef alias in JSON
     };
 
