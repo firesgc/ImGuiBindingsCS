@@ -1,8 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "0iEAtuxnN8Y=",
+  "dgSpecHash": "exK4QwFqeXk=",
   "success": true,
   "projectFilePath": "/home/runner/work/ImGuiBindingsCS/ImGuiBindingsCS/src/ImGuiBindingsGenerator/ImGuiBindingsGenerator.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "/tmp/codeql-scratch-343fc7c51b6f6e00/dbs/csharp/working/packages/microsoft.netcore.app.ref/10.0.5/microsoft.netcore.app.ref.10.0.5.nupkg.sha512",
+    "/tmp/codeql-scratch-343fc7c51b6f6e00/dbs/csharp/working/packages/microsoft.aspnetcore.app.ref/10.0.5/microsoft.aspnetcore.app.ref.10.0.5.nupkg.sha512",
+    "/tmp/codeql-scratch-343fc7c51b6f6e00/dbs/csharp/working/packages/microsoft.netcore.app.host.linux-x64/10.0.5/microsoft.netcore.app.host.linux-x64.10.0.5.nupkg.sha512"
+  ],
   "logs": []
 }
