@@ -221,8 +221,14 @@ return 0;
 
 static void RegisterTypedefs(NativeDefinitions defs, GeneratorConfig config)
 {
+    var condEval = new ConditionalEvaluator(config.KnownDefines);
+
     foreach (var typedef in defs.Typedefs)
     {
+        // Respect conditional compilation
+        if (!condEval.ShouldInclude(typedef.Conditionals))
+            continue;
+
         var desc = typedef.Type.Description;
         if (desc == null) continue;
 
@@ -239,8 +245,44 @@ static void RegisterTypedefs(NativeDefinitions defs, GeneratorConfig config)
             {
                 TypeMapper.RegisterTypedefAlias(typedef.Name, TypeMapper.ResolveUserType(desc.Name));
             }
+            else
+            {
+                // Typedef to a struct/other type (e.g., stbrp_node_im -> stbrp_node)
+                // Register as an alias so the type resolver can find it
+                TypeMapper.RegisterTypedefAlias(typedef.Name, desc.Name);
+            }
+        }
+        else if (desc.Kind == "Pointer" && desc.InnerType != null)
+        {
+            // Pointer typedefs (e.g., ImBitArrayPtr -> ImU32* -> uint*)
+            var innerType = ResolveTypedefPointerInner(desc.InnerType);
+            if (innerType != null)
+            {
+                TypeMapper.RegisterTypedefAlias(typedef.Name, $"{innerType}*");
+            }
         }
     }
+}
+
+static string? ResolveTypedefPointerInner(TypeDescription inner)
+{
+    if (inner.Kind == "Builtin" && inner.BuiltinType != null)
+        return TypeMapper.MapBuiltinType(inner.BuiltinType);
+
+    if (inner.Kind == "User" && inner.Name != null)
+    {
+        if (TypeMapper.IsTypedefAlias(inner.Name))
+            return TypeMapper.ResolveUserType(inner.Name);
+        return inner.Name;
+    }
+
+    if (inner.Kind == "Pointer" && inner.InnerType != null)
+    {
+        var resolved = ResolveTypedefPointerInner(inner.InnerType);
+        return resolved != null ? $"{resolved}*" : null;
+    }
+
+    return null;
 }
 
 static void PrintUsage()

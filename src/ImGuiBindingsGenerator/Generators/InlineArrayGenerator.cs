@@ -29,7 +29,8 @@ public sealed class InlineArrayGenerator
                 w.WriteLine($"[InlineArray(1)] // Placeholder — resolve {arr.SizeExpression} manually");
             }
 
-            w.WriteLine($"public struct {arr.Name}");
+            var unsafeModifier = TypeResolver.ContainsPointer(arr.ElementType) ? "unsafe " : "";
+            w.WriteLine($"public {unsafeModifier}struct {arr.Name}");
             w.OpenBrace();
             w.WriteLine($"public {arr.ElementType} Element;");
             w.CloseBrace();
