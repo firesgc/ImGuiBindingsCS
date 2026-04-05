@@ -112,7 +112,7 @@ public sealed class StructGenerator
         var csFieldName = TypeMapper.EscapeIdentifier(field.Name);
         var comment = CodeWriter.CleanTrailingComment(field.Comments?.Attached);
 
-        // Handle function pointer fields
+        // Handle function pointer fields (inline function pointer type)
         if (field.Type.TypeDetails?.Flavour == "function_pointer")
         {
             // Emit as nint (function pointer stored as IntPtr)
@@ -124,6 +124,16 @@ public sealed class StructGenerator
                 var prefixedName = $"{_config.StripStructTypePrefix(structName)}_{field.Name}_delegate";
                 _fieldDelegates.Add(delegateInfo with { Name = prefixedName });
             }
+            return;
+        }
+
+        // Handle function pointer typedef fields (e.g., ImDrawCallback, ImGuiSizeCallback)
+        // These are "User" types that resolve to C# delegates, which would make the struct
+        // a managed type and trigger CS8500 warnings when used as pointers.
+        if (field.Type.Description?.Kind == "User" && field.Type.Description.Name != null
+            && _typeResolver.IsDelegateTypedef(field.Type.Description.Name))
+        {
+            w.WriteLineWithComment($"public nint {csFieldName};", comment);
             return;
         }
 

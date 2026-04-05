@@ -10,6 +10,7 @@ public sealed class TypeResolver
     private readonly GeneratorConfig _config;
     private readonly HashSet<string> _knownEnumNames;
     private readonly HashSet<string> _knownStructNames;
+    private readonly HashSet<string> _knownDelegateTypedefNames;
     private readonly Dictionary<string, string> _typeNameMap = new();
 
     public TypeResolver(GeneratorConfig config, NativeDefinitions defs)
@@ -17,6 +18,12 @@ public sealed class TypeResolver
         _config = config;
         _knownEnumNames = defs.Enums.Select(e => e.Name).ToHashSet();
         _knownStructNames = defs.Structs.Select(s => s.Name).ToHashSet();
+
+        // Track function pointer typedefs — these become C# delegates and make structs "managed"
+        _knownDelegateTypedefNames = defs.Typedefs
+            .Where(t => t.Type.TypeDetails?.Flavour == "function_pointer")
+            .Select(t => t.Name)
+            .ToHashSet();
 
         // Build mapping from original names to C# names
         foreach (var e in defs.Enums)
@@ -129,6 +136,13 @@ public sealed class TypeResolver
 
         return desc.Name != null ? GetCSharpTypeName(desc.Name) : "nint";
     }
+
+    /// <summary>
+    /// Checks if a type name is a function pointer typedef (which becomes a C# delegate).
+    /// Struct fields of delegate types make the struct "managed", causing CS8500 warnings
+    /// when the struct is used as a pointer type. Such fields should be emitted as nint.
+    /// </summary>
+    public bool IsDelegateTypedef(string originalName) => _knownDelegateTypedefNames.Contains(originalName);
 
     /// <summary>
     /// Checks if a resolved type contains a pointer.
