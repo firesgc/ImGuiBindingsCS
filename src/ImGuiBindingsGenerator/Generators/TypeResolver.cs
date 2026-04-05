@@ -45,13 +45,15 @@ public sealed class TypeResolver
     /// </summary>
     public string GetCSharpTypeName(string originalName)
     {
-        // Check typedef aliases first (ImU32 -> uint, etc.)
-        if (TypeMapper.IsTypedefAlias(originalName))
-            return TypeMapper.ResolveUserType(originalName);
-
-        // Check our mapping
+        // Check enum/struct name mapping first — if a name maps to a known enum or struct,
+        // use the real type instead of a typedef alias (e.g., ImGuiHoveredFlags should resolve
+        // to the HoveredFlags enum, not to "int" via the typedef alias).
         if (_typeNameMap.TryGetValue(originalName, out var mapped))
             return mapped;
+
+        // Fall back to typedef aliases (ImU32 -> uint, ImGuiKeyChord -> int, etc.)
+        if (TypeMapper.IsTypedefAlias(originalName))
+            return TypeMapper.ResolveUserType(originalName);
 
         return originalName;
     }
