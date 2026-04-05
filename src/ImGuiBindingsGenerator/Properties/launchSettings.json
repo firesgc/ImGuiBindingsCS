@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ImGuiBindingsGenerator": {
+      "commandName": "Project",
+      "commandLineArgs": "c:\\GitHub\\ImGuiBindingsCS\\DearBindings_docking\\"
+    }
+  }
+}
