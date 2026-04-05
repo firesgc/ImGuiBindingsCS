@@ -54,6 +54,7 @@ public sealed class GeneratorConfig
     {
         ["IMGUI_DISABLE_OBSOLETE_FUNCTIONS"] = true,
         ["IMGUI_DISABLE_OBSOLETE_KEYIO"] = true,
+        ["IMGUI_HAS_DOCK"] = true,
     };
 
     /// <summary>

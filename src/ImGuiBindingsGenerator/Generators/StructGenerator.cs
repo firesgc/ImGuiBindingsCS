@@ -11,6 +11,7 @@ public sealed class StructGenerator
     private readonly GeneratorConfig _config;
     private readonly TypeResolver _typeResolver;
     private readonly ConditionalEvaluator _condEval;
+    private readonly HashSet<string> _emittedNames;
 
     // Collects inline array types that need to be generated
     private readonly List<InlineArrayInfo> _inlineArrays = [];
@@ -21,11 +22,12 @@ public sealed class StructGenerator
     public IReadOnlyList<InlineArrayInfo> InlineArrays => _inlineArrays;
     public IReadOnlyList<DelegateInfo> FieldDelegates => _fieldDelegates;
 
-    public StructGenerator(GeneratorConfig config, TypeResolver typeResolver, ConditionalEvaluator condEval)
+    public StructGenerator(GeneratorConfig config, TypeResolver typeResolver, ConditionalEvaluator condEval, HashSet<string>? emittedNames = null)
     {
         _config = config;
         _typeResolver = typeResolver;
         _condEval = condEval;
+        _emittedNames = emittedNames ?? [];
     }
 
     public void Generate(CodeWriter w, List<StructItem> structs)
@@ -35,6 +37,10 @@ public sealed class StructGenerator
             if (!_condEval.ShouldInclude(structDef.Conditionals))
                 continue;
 
+            // Skip already-emitted structs (from other JSON files)
+            if (!_emittedNames.Add(structDef.Name))
+                continue;
+
             // Skip forward declarations (opaque types) — generate as empty structs
             if (structDef.ForwardDeclaration)
             {
@@ -42,10 +48,6 @@ public sealed class StructGenerator
                 w.WriteLine();
                 continue;
             }
-
-            // Skip anonymous types
-            if (structDef.IsAnonymous)
-                continue;
 
             GenerateStruct(w, structDef);
             w.WriteLine();

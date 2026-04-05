@@ -22,8 +22,6 @@ public sealed class FunctionGenerator
     {
         w.WriteLine($"public static unsafe partial class ImGuiNative");
         w.OpenBrace();
-        w.WriteLine($"private const string LibName = \"{_config.NativeLibraryName}\";");
-        w.WriteLine();
 
         foreach (var func in functions)
         {

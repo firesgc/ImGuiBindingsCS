@@ -9,11 +9,13 @@ public sealed class EnumGenerator
 {
     private readonly GeneratorConfig _config;
     private readonly ConditionalEvaluator _condEval;
+    private readonly HashSet<string> _emittedNames;
 
-    public EnumGenerator(GeneratorConfig config, ConditionalEvaluator condEval)
+    public EnumGenerator(GeneratorConfig config, ConditionalEvaluator condEval, HashSet<string>? emittedNames = null)
     {
         _config = config;
         _condEval = condEval;
+        _emittedNames = emittedNames ?? [];
     }
 
     public void Generate(CodeWriter w, List<EnumItem> enums)
@@ -21,6 +23,10 @@ public sealed class EnumGenerator
         foreach (var enumDef in enums)
         {
             if (!_condEval.ShouldInclude(enumDef.Conditionals))
+                continue;
+
+            // Skip already-emitted enums (from other JSON files)
+            if (!_emittedNames.Add(enumDef.Name))
                 continue;
 
             GenerateEnum(w, enumDef);

@@ -10,12 +10,14 @@ public sealed class DelegateGenerator
     private readonly GeneratorConfig _config;
     private readonly TypeResolver _typeResolver;
     private readonly ConditionalEvaluator _condEval;
+    private readonly HashSet<string> _emittedNames;
 
-    public DelegateGenerator(GeneratorConfig config, TypeResolver typeResolver, ConditionalEvaluator condEval)
+    public DelegateGenerator(GeneratorConfig config, TypeResolver typeResolver, ConditionalEvaluator condEval, HashSet<string>? emittedNames = null)
     {
         _config = config;
         _typeResolver = typeResolver;
         _condEval = condEval;
+        _emittedNames = emittedNames ?? [];
     }
 
     public void Generate(CodeWriter w, List<TypedefItem> typedefs, IReadOnlyList<DelegateInfo> additionalDelegates)
@@ -30,6 +32,10 @@ public sealed class DelegateGenerator
             if (delegateInfo == null)
                 continue;
 
+            // Skip already-emitted delegates (from other JSON files)
+            if (!_emittedNames.Add(delegateInfo.Name))
+                continue;
+
             GenerateDelegate(w, delegateInfo, typedef.Comments);
             w.WriteLine();
         }
@@ -37,6 +43,9 @@ public sealed class DelegateGenerator
         // Generate delegates discovered in struct fields
         foreach (var delegateInfo in additionalDelegates)
         {
+            if (!_emittedNames.Add(delegateInfo.Name))
+                continue;
+
             GenerateDelegate(w, delegateInfo, null);
             w.WriteLine();
         }
