@@ -84,7 +84,7 @@ public sealed class ConstantGenerator
     {
         s = s.TrimEnd('f', 'F', 'L', 'l', 'U', 'u');
         if (s.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
-            return s[2..].All(c => char.IsAsciiHexDigit(c));
+            return s.Length > 2 && s[2..].All(c => char.IsAsciiHexDigit(c));
         return s.All(c => char.IsDigit(c) || c == '.' || c == '-' || c == '+' || c == 'e' || c == 'E');
     }
 
