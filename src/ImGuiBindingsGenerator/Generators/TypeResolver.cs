@@ -145,6 +145,24 @@ public sealed class TypeResolver
     public bool IsDelegateTypedef(string originalName) => _knownDelegateTypedefNames.Contains(originalName);
 
     /// <summary>
+    /// Checks if a TypeDescription represents a plain C bool (not a pointer to bool).
+    /// Used to marshal bool return types and parameters in function/delegate signatures.
+    /// Struct fields and bool* pointers should remain as byte/byte*.
+    /// </summary>
+    public static bool IsBoolType(TypeDescription? desc)
+    {
+        return desc is { Kind: "Builtin", BuiltinType: "bool" };
+    }
+
+    /// <summary>
+    /// Checks if a TypeInfo represents a plain C bool.
+    /// </summary>
+    public static bool IsBoolType(TypeInfo? typeInfo)
+    {
+        return IsBoolType(typeInfo?.Description);
+    }
+
+    /// <summary>
     /// Checks if a TypeDescription represents a const char* (read-only C string).
     /// This is: Pointer -> Builtin(char) with storage_classes containing "const".
     /// Used to distinguish read-only string parameters (which can be marshaled as string)
@@ -186,6 +204,8 @@ public sealed class TypeResolver
             return null;
 
         var returnType = typeDetails.ReturnType != null ? Resolve(typeDetails.ReturnType) : "void";
+        if (IsBoolType(typeDetails.ReturnType))
+            returnType = "bool";
         var parameters = new List<(string Type, string Name)>();
 
         if (typeDetails.Arguments != null)
@@ -194,6 +214,8 @@ public sealed class TypeResolver
             {
                 if (arg.IsVarargs) continue;
                 var paramType = arg.Type != null ? Resolve(arg.Type) : "nint";
+                if (IsBoolType(arg.Type?.Description))
+                    paramType = "bool";
                 var paramName = TypeMapper.EscapeIdentifier(arg.Name ?? $"arg{parameters.Count}");
                 parameters.Add((paramType, paramName));
             }
@@ -212,6 +234,8 @@ public sealed class TypeResolver
             return null;
 
         var returnType = typeDetails.ReturnType != null ? Resolve(typeDetails.ReturnType) : "void";
+        if (IsBoolType(typeDetails.ReturnType))
+            returnType = "bool";
         var parameters = new List<(string Type, string Name)>();
 
         if (typeDetails.Arguments != null)
@@ -220,6 +244,8 @@ public sealed class TypeResolver
             {
                 if (arg.IsVarargs) continue;
                 var paramType = arg.Type != null ? Resolve(arg.Type) : "nint";
+                if (IsBoolType(arg.Type?.Description))
+                    paramType = "bool";
                 var paramName = TypeMapper.EscapeIdentifier(arg.Name ?? $"arg{parameters.Count}");
                 parameters.Add((paramType, paramName));
             }

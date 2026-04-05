@@ -63,6 +63,11 @@ public sealed class FunctionGenerator
             ? _typeResolver.Resolve(func.ReturnType)
             : "void";
 
+        // Check if return type is a C bool that should be marshaled as C# bool
+        var returnIsBool = TypeResolver.IsBoolType(func.ReturnType);
+        if (returnIsBool)
+            returnType = "bool";
+
         // Build parameter list
         var parameters = new List<string>();
         foreach (var arg in func.Arguments)
@@ -76,6 +81,11 @@ public sealed class FunctionGenerator
             if (TypeResolver.IsConstCharPointer(arg.Type))
             {
                 parameters.Add($"[MarshalAs(UnmanagedType.LPUTF8Str)] string {paramName}");
+            }
+            // Marshal C bool parameters as C# bool
+            else if (TypeResolver.IsBoolType(arg.Type))
+            {
+                parameters.Add($"[MarshalAs(UnmanagedType.U1)] bool {paramName}");
             }
             else
             {
@@ -95,6 +105,10 @@ public sealed class FunctionGenerator
 
         // Write the DllImport attribute with explicit EntryPoint
         w.WriteLine($"[DllImport(LibName, CallingConvention = CallingConvention.Cdecl, EntryPoint = \"{originalName}\")]");
+
+        // Add return marshaling attribute for bool return types
+        if (returnIsBool)
+            w.WriteLine("[return: MarshalAs(UnmanagedType.U1)]");
 
         // Build the method signature
         var paramList = string.Join(", ", parameters);

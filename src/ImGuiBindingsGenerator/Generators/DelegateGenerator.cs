@@ -61,7 +61,12 @@ public sealed class DelegateGenerator
 
         w.WriteLine("[UnmanagedFunctionPointer(CallingConvention.Cdecl)]");
 
-        var paramList = string.Join(", ", info.Parameters.Select(p => $"{p.Type} {p.Name}"));
+        // Add return marshaling attribute for bool return types
+        if (info.ReturnType == "bool")
+            w.WriteLine("[return: MarshalAs(UnmanagedType.U1)]");
+
+        var paramList = string.Join(", ", info.Parameters.Select(p =>
+            p.Type == "bool" ? $"[MarshalAs(UnmanagedType.U1)] bool {p.Name}" : $"{p.Type} {p.Name}"));
         w.WriteLine($"public {unsafeModifier}delegate {info.ReturnType} {info.Name}({paramList});");
     }
 }
