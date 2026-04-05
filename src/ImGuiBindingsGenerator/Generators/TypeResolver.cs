@@ -145,6 +145,30 @@ public sealed class TypeResolver
     public bool IsDelegateTypedef(string originalName) => _knownDelegateTypedefNames.Contains(originalName);
 
     /// <summary>
+    /// Checks if a TypeDescription represents a const char* (read-only C string).
+    /// This is: Pointer -> Builtin(char) with storage_classes containing "const".
+    /// Used to distinguish read-only string parameters (which can be marshaled as string)
+    /// from mutable char* buffers (which must remain byte*).
+    /// </summary>
+    public static bool IsConstCharPointer(TypeDescription? desc)
+    {
+        if (desc == null || desc.Kind != "Pointer")
+            return false;
+
+        var inner = desc.InnerType;
+        return inner is { Kind: "Builtin", BuiltinType: "char" }
+            && inner.StorageClasses?.Contains("const") == true;
+    }
+
+    /// <summary>
+    /// Checks if a TypeInfo represents a const char*.
+    /// </summary>
+    public static bool IsConstCharPointer(TypeInfo? typeInfo)
+    {
+        return IsConstCharPointer(typeInfo?.Description);
+    }
+
+    /// <summary>
     /// Checks if a resolved type contains a pointer.
     /// </summary>
     public static bool ContainsPointer(string csType)

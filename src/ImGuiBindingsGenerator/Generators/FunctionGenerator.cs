@@ -70,10 +70,18 @@ public sealed class FunctionGenerator
             if (arg.IsVarargs)
                 continue;
 
-            var paramType = arg.Type != null ? _typeResolver.Resolve(arg.Type) : "nint";
             var paramName = TypeMapper.EscapeIdentifier(arg.Name ?? $"arg{parameters.Count}");
 
-            parameters.Add($"{paramType} {paramName}");
+            // Marshal const char* parameters as string for convenient P/Invoke usage
+            if (TypeResolver.IsConstCharPointer(arg.Type))
+            {
+                parameters.Add($"[MarshalAs(UnmanagedType.LPUTF8Str)] string {paramName}");
+            }
+            else
+            {
+                var paramType = arg.Type != null ? _typeResolver.Resolve(arg.Type) : "nint";
+                parameters.Add($"{paramType} {paramName}");
+            }
         }
 
         // Strip prefix from C# method name but keep original for EntryPoint
