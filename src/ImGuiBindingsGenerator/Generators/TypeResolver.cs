@@ -165,6 +165,25 @@ public sealed class TypeResolver
     }
 
     /// <summary>
+    /// Checks if a TypeDescription represents a pointer to C bool (bool*).
+    /// Used to marshal bool* parameters as "ref bool" in function/delegate signatures,
+    /// giving callers a convenient managed API instead of raw byte*.
+    /// </summary>
+    public static bool IsBoolPointer(TypeDescription? desc)
+    {
+        return desc is { Kind: "Pointer" }
+            && desc.InnerType is { Kind: "Builtin", BuiltinType: "bool" };
+    }
+
+    /// <summary>
+    /// Checks if a TypeInfo represents a pointer to C bool (bool*).
+    /// </summary>
+    public static bool IsBoolPointer(TypeInfo? typeInfo)
+    {
+        return IsBoolPointer(typeInfo?.Description);
+    }
+
+    /// <summary>
     /// Checks if a TypeDescription represents a const char* (read-only C string).
     /// This is: Pointer -> Builtin(char) with storage_classes containing "const".
     /// Used to distinguish read-only string parameters (which can be marshaled as string)
@@ -218,6 +237,8 @@ public sealed class TypeResolver
                 var paramType = arg.Type != null ? Resolve(arg.Type) : "nint";
                 if (IsBoolType(arg.Type?.Description))
                     paramType = "bool";
+                else if (IsBoolPointer(arg.Type?.Description))
+                    paramType = "ref bool";
                 var paramName = TypeMapper.EscapeIdentifier(arg.Name ?? $"arg{parameters.Count}");
                 parameters.Add((paramType, paramName));
             }
@@ -248,6 +269,8 @@ public sealed class TypeResolver
                 var paramType = arg.Type != null ? Resolve(arg.Type) : "nint";
                 if (IsBoolType(arg.Type?.Description))
                     paramType = "bool";
+                else if (IsBoolPointer(arg.Type?.Description))
+                    paramType = "ref bool";
                 var paramName = TypeMapper.EscapeIdentifier(arg.Name ?? $"arg{parameters.Count}");
                 parameters.Add((paramType, paramName));
             }

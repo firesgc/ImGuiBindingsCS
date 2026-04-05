@@ -87,6 +87,11 @@ public sealed class FunctionGenerator
             {
                 parameters.Add($"[MarshalAs(UnmanagedType.U1)] bool {paramName}");
             }
+            // Marshal C bool* parameters as ref bool for convenient managed usage
+            else if (TypeResolver.IsBoolPointer(arg.Type))
+            {
+                parameters.Add($"[MarshalAs(UnmanagedType.U1)] ref bool {paramName}");
+            }
             else
             {
                 var paramType = arg.Type != null ? _typeResolver.Resolve(arg.Type) : "nint";
