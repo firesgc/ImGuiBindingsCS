@@ -18,9 +18,9 @@ public sealed class FunctionGenerator
         _condEval = condEval;
     }
 
-    public void Generate(CodeWriter w, List<FunctionItem> functions)
+    public void Generate(CodeWriter w, List<FunctionItem> functions, string className = "ImGuiNative")
     {
-        w.WriteLine($"public static unsafe partial class ImGuiNative");
+        w.WriteLine($"public static unsafe partial class {className}");
         w.OpenBrace();
 
         foreach (var func in functions)

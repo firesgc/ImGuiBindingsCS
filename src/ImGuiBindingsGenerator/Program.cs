@@ -177,10 +177,23 @@ foreach (var (subDir, groupFiles) in groups)
         sw.WriteLine();
         sw.WriteLine($"namespace {config.Namespace};");
         sw.WriteLine();
-        sw.WriteLine("public static unsafe partial class ImGuiNative");
+        sw.WriteLine($"public static unsafe partial class {config.PublicClassName}");
         sw.OpenBrace();
         sw.WriteLine($"private const string LibName = \"{config.NativeLibraryName}\";");
         sw.CloseBrace();
+
+        // Check if this group contains any internal files
+        bool hasInternalFiles = groupFiles.Any(f =>
+            f.BaseName.EndsWith("_internal", StringComparison.OrdinalIgnoreCase));
+
+        if (hasInternalFiles)
+        {
+            sw.WriteLine();
+            sw.WriteLine($"public static unsafe partial class {config.InternalClassName}");
+            sw.OpenBrace();
+            sw.WriteLine($"private const string LibName = \"{config.NativeLibraryName}\";");
+            sw.CloseBrace();
+        }
 
         var sharedPath = Path.Combine(groupOutputDir, "imgui_shared.cs");
         File.WriteAllText(sharedPath, sw.ToString());
@@ -239,7 +252,9 @@ foreach (var (subDir, groupFiles) in groups)
 
         // ── Functions ────────────────────────────────────────────
         var functionGen = new FunctionGenerator(config, typeResolver, condEval);
-        functionGen.Generate(w, defs.Functions);
+        var isInternalFile = baseName.EndsWith("_internal", StringComparison.OrdinalIgnoreCase);
+        var functionClassName = isInternalFile ? config.InternalClassName : config.PublicClassName;
+        functionGen.Generate(w, defs.Functions, functionClassName);
 
         // Write the single output file
         var outputPath = Path.Combine(groupOutputDir, baseName + ".cs");
@@ -333,7 +348,7 @@ static void PrintUsage()
 
         Options:
           -n, --namespace <ns>    C# namespace for generated code (default: ImGui)
-          -l, --lib <name>        Native library name for DllImport (default: dcimgui)
+          -l, --lib <name>        Native library name for DllImport (default: jaoseengine)
           -o, --output <dir>      Output directory (default: generated)
           --no-internal           Exclude internal definitions
           -h, --help              Show this help message

@@ -11,9 +11,9 @@ public sealed class GeneratorConfig
     public string Namespace { get; set; } = "ImGui";
 
     /// <summary>
-    /// The native library name used in [DllImport] (default: "dcimgui").
+    /// The native library name used in [DllImport] (default: "jaoseengine").
     /// </summary>
-    public string NativeLibraryName { get; set; } = "dcimgui";
+    public string NativeLibraryName { get; set; } = "jaoseengine";
 
     /// <summary>
     /// Prefixes to strip from function names (default: ["ImGui_"]).
@@ -31,6 +31,16 @@ public sealed class GeneratorConfig
     /// Types with only the "Im" prefix (e.g., ImVec2, ImDrawList) are kept as-is.
     /// </summary>
     public List<string> StructTypePrefixesToStrip { get; set; } = ["ImGui"];
+
+    /// <summary>
+    /// Class name for public function bindings (default: "ImGuiNative").
+    /// </summary>
+    public string PublicClassName { get; set; } = "ImGuiNative";
+
+    /// <summary>
+    /// Class name for internal function bindings (default: "ImGuiNativeInternal").
+    /// </summary>
+    public string InternalClassName { get; set; } = "ImGuiNativeInternal";
 
     /// <summary>
     /// Whether to include internal definitions.
