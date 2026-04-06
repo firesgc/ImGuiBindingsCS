@@ -348,7 +348,7 @@ static void PrintUsage()
 
         Options:
           -n, --namespace <ns>    C# namespace for generated code (default: ImGui)
-          -l, --lib <name>        Native library name for DllImport (default: jaoseengine)
+          -l, --lib <name>        Native library name for DllImport (default: jaose.engine)
           -o, --output <dir>      Output directory (default: generated)
           --no-internal           Exclude internal definitions
           -h, --help              Show this help message

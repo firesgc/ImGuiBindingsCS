@@ -11,9 +11,9 @@ public sealed class GeneratorConfig
     public string Namespace { get; set; } = "ImGui";
 
     /// <summary>
-    /// The native library name used in [DllImport] (default: "jaoseengine").
+    /// The native library name used in [DllImport] (default: "jaose.engine").
     /// </summary>
-    public string NativeLibraryName { get; set; } = "jaoseengine";
+    public string NativeLibraryName { get; set; } = "jaose.engine";
 
     /// <summary>
     /// Prefixes to strip from function names (default: ["ImGui_"]).
