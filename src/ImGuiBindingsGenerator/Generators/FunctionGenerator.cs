@@ -92,6 +92,11 @@ public sealed class FunctionGenerator
             {
                 parameters.Add($"[MarshalAs(UnmanagedType.U1)] ref bool {paramName}");
             }
+            // Marshal non-const pointers to blittable builtin types (int*, float*, double*, etc.) as ref T
+            else if (TypeResolver.GetBlittableBuiltinPointerType(arg.Type) is { } refType)
+            {
+                parameters.Add($"ref {refType} {paramName}");
+            }
             else
             {
                 var paramType = arg.Type != null ? _typeResolver.Resolve(arg.Type) : "nint";

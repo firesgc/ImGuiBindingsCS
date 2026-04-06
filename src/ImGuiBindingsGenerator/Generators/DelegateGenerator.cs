@@ -68,6 +68,7 @@ public sealed class DelegateGenerator
         var paramList = string.Join(", ", info.Parameters.Select(p =>
             p.Type == "bool" ? $"[MarshalAs(UnmanagedType.U1)] bool {p.Name}" :
             p.Type == "ref bool" ? $"[MarshalAs(UnmanagedType.U1)] ref bool {p.Name}" :
+            p.Type.StartsWith("ref ") ? $"{p.Type} {p.Name}" :
             $"{p.Type} {p.Name}"));
         w.WriteLine($"public {unsafeModifier}delegate {info.ReturnType} {info.Name}({paramList});");
     }

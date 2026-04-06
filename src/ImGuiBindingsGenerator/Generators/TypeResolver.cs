@@ -184,6 +184,41 @@ public sealed class TypeResolver
     }
 
     /// <summary>
+    /// Checks if a TypeDescription represents a non-const pointer to a blittable builtin
+    /// numeric type (e.g., float*, int*, double*). These can be marshaled as "ref T" in
+    /// P/Invoke signatures. Returns the resolved C# element type, or null if not applicable.
+    /// Excludes void*, char*, and bool* which have their own special handling.
+    /// </summary>
+    public static string? GetBlittableBuiltinPointerType(TypeDescription? desc)
+    {
+        if (desc is not { Kind: "Pointer" })
+            return null;
+
+        var inner = desc.InnerType;
+        if (inner is not { Kind: "Builtin" })
+            return null;
+
+        // Skip types with dedicated handling elsewhere
+        var bt = inner.BuiltinType;
+        if (bt is null or "void" or "char" or "bool")
+            return null;
+
+        // Skip const pointers — they may point to arrays (e.g., PlotLines values)
+        if (inner.StorageClasses?.Contains("const") == true)
+            return null;
+
+        return TypeMapper.MapBuiltinType(bt);
+    }
+
+    /// <summary>
+    /// Checks if a TypeInfo represents a non-const pointer to a blittable builtin type.
+    /// </summary>
+    public static string? GetBlittableBuiltinPointerType(TypeInfo? typeInfo)
+    {
+        return GetBlittableBuiltinPointerType(typeInfo?.Description);
+    }
+
+    /// <summary>
     /// Checks if a TypeDescription represents a const char* (read-only C string).
     /// This is: Pointer -> Builtin(char) with storage_classes containing "const".
     /// Used to distinguish read-only string parameters (which can be marshaled as string)
@@ -239,6 +274,8 @@ public sealed class TypeResolver
                     paramType = "bool";
                 else if (IsBoolPointer(arg.Type?.Description))
                     paramType = "ref bool";
+                else if (GetBlittableBuiltinPointerType(arg.Type?.Description) is { } refType)
+                    paramType = $"ref {refType}";
                 var paramName = TypeMapper.EscapeIdentifier(arg.Name ?? $"arg{parameters.Count}");
                 parameters.Add((paramType, paramName));
             }
@@ -271,6 +308,8 @@ public sealed class TypeResolver
                     paramType = "bool";
                 else if (IsBoolPointer(arg.Type?.Description))
                     paramType = "ref bool";
+                else if (GetBlittableBuiltinPointerType(arg.Type?.Description) is { } refType)
+                    paramType = $"ref {refType}";
                 var paramName = TypeMapper.EscapeIdentifier(arg.Name ?? $"arg{parameters.Count}");
                 parameters.Add((paramType, paramName));
             }
