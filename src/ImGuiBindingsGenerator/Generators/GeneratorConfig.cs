@@ -43,6 +43,23 @@ public sealed class GeneratorConfig
     public string InternalClassName { get; set; } = "ImGuiNativeInternal";
 
     /// <summary>
+    /// Whether to generate high-level wrapper classes with default parameter values.
+    /// </summary>
+    public bool GenerateWrapper { get; set; } = true;
+
+    /// <summary>
+    /// Class name for the public wrapper class (default: "ImGui").
+    /// The wrapper provides convenience methods that forward to the P/Invoke class
+    /// with C# default parameter values where possible.
+    /// </summary>
+    public string WrapperClassName { get; set; } = "ImGui";
+
+    /// <summary>
+    /// Class name for the internal wrapper class (default: "ImGuiInternal").
+    /// </summary>
+    public string InternalWrapperClassName { get; set; } = "ImGuiInternal";
+
+    /// <summary>
     /// Whether to include internal definitions.
     /// </summary>
     public bool IncludeInternal { get; set; } = true;
