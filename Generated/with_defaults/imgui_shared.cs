@@ -8,10 +8,10 @@ namespace ImGui;
 
 public static unsafe partial class ImGuiNative
 {
-    private const string LibName = "jaoseengine";
+    private const string LibName = "jaose.engine";
 }
 
 public static unsafe partial class ImGuiNativeInternal
 {
-    private const string LibName = "jaoseengine";
+    private const string LibName = "jaose.engine";
 }
