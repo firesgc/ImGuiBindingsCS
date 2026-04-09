@@ -26,12 +26,6 @@ for (int i = 0; i < args.Length; i++)
         case "--no-internal":
             config.IncludeInternal = false;
             break;
-        case "--no-wrapper":
-            config.GenerateWrapper = false;
-            break;
-        case "--wrapper-class" or "-w" when i + 1 < args.Length:
-            config.WrapperClassName = args[++i];
-            break;
         case "--help" or "-h":
             PrintUsage();
             return 0;
@@ -262,16 +256,6 @@ foreach (var (subDir, groupFiles) in groups)
         var functionClassName = isInternalFile ? config.InternalClassName : config.PublicClassName;
         functionGen.Generate(w, defs.Functions, functionClassName);
 
-        // ── Wrapper Class ────────────────────────────────────────
-        if (config.GenerateWrapper)
-        {
-            var wrapperGen = new WrapperClassGenerator(config, typeResolver, condEval);
-            var wrapperClassName = isInternalFile ? config.InternalWrapperClassName : config.WrapperClassName;
-            var nativeClassName = isInternalFile ? config.InternalClassName : config.PublicClassName;
-            w.WriteLine();
-            wrapperGen.Generate(w, defs.Functions, wrapperClassName, nativeClassName);
-        }
-
         // Write the single output file
         var outputPath = Path.Combine(groupOutputDir, baseName + ".cs");
         File.WriteAllText(outputPath, w.ToString());
@@ -366,9 +350,7 @@ static void PrintUsage()
           -n, --namespace <ns>    C# namespace for generated code (default: ImGui)
           -l, --lib <name>        Native library name for DllImport (default: jaose.engine)
           -o, --output <dir>      Output directory (default: generated)
-          -w, --wrapper-class <n> Wrapper class name (default: ImGui)
           --no-internal           Exclude internal definitions
-          --no-wrapper            Don't generate high-level wrapper classes
           -h, --help              Show this help message
 
         Examples:
