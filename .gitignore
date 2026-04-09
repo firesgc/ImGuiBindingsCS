@@ -2,9 +2,6 @@
 **/bin/
 **/obj/
 
-# Generated bindings (regenerated from JSON)
-generated/
-
 # IDE
 .vs/
 .idea/
